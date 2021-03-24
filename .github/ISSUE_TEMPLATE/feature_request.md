@@ -1,7 +1,7 @@
 ---
 name: Feature Request (機能追加)
 about: Suggest an idea for this project
-title: ''
+title: 'feat: '
 labels: 'enhancement'
 assignees: ''
 

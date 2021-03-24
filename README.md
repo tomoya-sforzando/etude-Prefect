@@ -10,8 +10,9 @@
 
 > Prefect Core is a new kind of workflow management system that makes it easy to take your data pipelines and add semantics like retries, logging, dynamic mapping, caching, failure notifications, and more.
 
-- [Requirements](#requirements)
+- [Prerequisites](#prerequisites)
 - [How to](#how-to)
+  - [Help](#help)
   - [Setup](#setup)
   - [Develop](#develop)
   - [Run](#run)
@@ -25,7 +26,7 @@
   - [LICENSE](#license)
   - [Contributors](#contributors)
 
-## Requirements
+## Prerequisites
 
 - A (Version x.y.z or higher)
   - B
@@ -35,46 +36,60 @@
 
 ## How to
 
+### Help
+
+```shell
+open                 閲覧
+hide                 秘匿
+reveal               暴露
+start                開始
+lint                 監査
+test                 試験
+deploy               配備
+clean                掃除
+help                 助言
+```
+
 ### Setup
 
 ```shell
-(T.B.D.)
+(T. B. D.)
 ```
 
 ### Develop
 
 ```shell
-(T.B.D.)
+(T. B. D.)
 ```
 
 ### Run
 
 ```shell
-(T.B.D.)
+(T. B. D.)
 ```
 
 ### Lint
 
 ```shell
-(T.B.D.)
+(T. B. D.)
 ```
 
 ### Test
 
 ```shell
-(T.B.D.)
+(T. B. D.)
 ```
 
 ### Deploy
 
 ```shell
-(T.B.D.)
+(T. B. D.)
 ```
 
 ### Document
 
 ```shell
-(T.B.D.)
+(T. B. D.)
 ```
 
 #### CHANGELOG.md
