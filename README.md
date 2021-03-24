@@ -4,9 +4,9 @@
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-|![Screenshot 1](https://placehold.jp/32/3d4070/ffffff/720x480.png?text=Screenshot%201)|![Screenshot 2](https://placehold.jp/32/703d40/ffffff/720x480.png?text=Screenshot%202)|
+|![Dashboard](https://user-images.githubusercontent.com/32637762/112289276-81488880-8cd1-11eb-8220-d7ce1bc7b1c8.png)|![Flow](https://user-images.githubusercontent.com/32637762/112289401-a2a97480-8cd1-11eb-9e9d-3ae1ee2f5cc0.png)|
 |:---:|:---:|
-|Screenshot 1|Screenshot 2|
+|Dashboard|Flow|
 
 > Prefect Core is a new kind of workflow management system that makes it easy to take your data pipelines and add semantics like retries, logging, dynamic mapping, caching, failure notifications, and more.
 
@@ -28,11 +28,10 @@
 
 ## Prerequisites
 
-- A (Version x.y.z or higher)
-  - B
-  - C
-- D
-  - E
+- Python 3.8 or higher
+  - Prefect
+- Docker
+  - docker-compose
 
 ## How to
 
