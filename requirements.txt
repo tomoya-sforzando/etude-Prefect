@@ -1,1 +1,4 @@
-prefect[dev,templates,viz,aws,google,twitter,airtable,spacy,redis]
+boto3
+pandas
+prefect[dev,templates,viz,aws,spacy,redis]
+pydeps
