@@ -51,8 +51,17 @@ help                 助言
 
 ### Setup
 
+#### Authorize ECR
+
 ```shell
-(T. B. D.)
+aws configure
+aws ecr get-login-password --region ap-northeast-1 | docker login --username AWS --password-stdin 910376070004.dkr.ecr.ap-northeast-1.amazonaws.com
+```
+
+#### Install Dependencies
+
+```shell
+pip install -r requreiments.txt
 ```
 
 ### Develop

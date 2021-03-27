@@ -13,31 +13,31 @@ STORAGE = Docker(
     dockerfile='./Dockerfile'
 )
 
-DEFINITION = yaml.safe_load(
-    """
-networkMode: awsvpc
-cpu: 1024
-memory: 2048
-requiresCompatibilities:
-  - FARGATE
-    """
-)
+# DEFINITION = yaml.safe_load(
+#     """
+# networkMode: awsvpc
+# cpu: 1024
+# memory: 2048
+# requiresCompatibilities:
+#   - FARGATE
+#     """
+# )
 
 RUN_CONFIG = ECSRun(
     run_task_kwargs={
         'cluster': 'msd-nector-development-prefect-cluster'
     },
-    task_definition=DEFINITION,
-    image='msd-nector-prefect-agent',
+    # task_definition=DEFINITION,
+    # image='msd-nector-prefect-agent',
     execution_role_arn='arn:aws:iam::910376070004:role/msd-nector-ecs-fullaccess-role',
-    task_role_arn='arn:aws:iam::910376070004:role/msd-nector-ecs-fullaccess-role',
+    # task_role_arn='arn:aws:iam::910376070004:role/msd-nector-ecs-fullaccess-role',
     labels=['ecs', 'dev']
 )
 
 
 @task
 def say_hello():
-    logger = prefect.context.get_logger('logger')
+    logger = prefect.context.get('logger')
     logger.info(f'Hello Prefect!')
 
 
