@@ -22,5 +22,6 @@ client = Client()
 client.create_project(project_name=PROJECT_NAME)
 
 flow.run_config = UniversalRun()
-flow.register(project_name=PROJECT_NAME)
-flow.run()
+flow_id = flow.register(project_name=PROJECT_NAME)
+
+client.create_flow_run(flow_id=flow_id)
