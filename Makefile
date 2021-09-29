@@ -12,13 +12,13 @@ reveal: ## 暴露
 	git secret reveal -v
 
 start: ## 開始
-	echo "TODO: Not Implemented Yet!"
+	docker compose up -d --build --remove-orphans
 
 lint: ## 監査
 	echo "TODO: Not Implemented Yet!"
 
 test: ## 試験
-	$(CMD_DOCKER_COMPOSE) run ${ARGS} $(CONTAINER_DJANGO) python manage.py test
+	echo "TODO: Not Implemented Yet!"
 
 deploy: ## 配備
 	echo "TODO: Not Implemented Yet!"

@@ -1,4 +1,0 @@
-boto3
-pandas
-prefect[dev,templates,viz,aws,spacy,redis]==0.14.11
-pydeps
