@@ -4,7 +4,6 @@ TIMESTAMP := $(shell date +%Y%m%d%H%M%S)
 
 CMD_DOCKER := docker
 CMD_DOCKER_COMPOSE := docker-compose
-CONTAINER_SHELL := bash
 PREVIEW_URL := http://0.0.0.0:8080/
 LATEST_CONTAINER := $(shell docker ps -ql)
 
@@ -24,8 +23,8 @@ setup: up ## 初回
 
 restart: stop up ; ## 再起
 
-shell: up ## 接続
-	${CMD_DOCKER_COMPOSE} ${ARGS} ${CONTAINER_SHELL}
+shell: ## 接続
+	echo "TODO: Not Implemented Yet!"
 
 logs: ## 記録
 	${CMD_DOCKER_COMPOSE} logs
@@ -59,6 +58,9 @@ stop: ## 停止
 
 down: ## 削除
 	${CMD_DOCKER_COMPOSE} down --rmi all --remove-orphans
+
+kill: ## 殺害
+	${CMD_DOCKER_COMPOSE} kill
 
 clean: down ## 掃除
 	echo "TODO: Not Implemented Yet!"

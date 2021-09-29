@@ -2,10 +2,11 @@ FROM python:3.8-bullseye
 
 LABEL maintainer="shin@sforzando.co.jp"
 
-ENV WORK_DIR=/flow
-ENV PREFECT__USER_CONFIG_PATH="$WORK_DIR/config.toml"
+ARG PREFECT_PROJECT_NAME=etude-Prefect
 
+ENV WORK_DIR /flow
 WORKDIR $WORK_DIR
+ENV PREFECT__USER_CONFIG_PATH $WORK_DIR/config.toml
 
 RUN pip install --upgrade pip && pip install "prefect[dev, templates, viz, aws]"
 

@@ -1,19 +1,42 @@
-version: '3'
+version: '3.8'
+
+x-template: &template
+  platform: linux/amd64
+  build:
+    context: .
+    dockerfile: Dockerfile
+    args:
+      - PREFECT_PROJECT_NAME=etude-Prefect
+  environment:
+    - PREFECT_PROJECT_NAME=etude-Prefect
+  volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+
 services:
   server:
-    platform: linux/amd64
+    <<: *template
     build:
       context: server
-      dockerfile: Dockerfile
+
+  agent:
+    <<: *template
+    build:
+      context: agent
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-
-  flow:
-    platform: linux/amd64
-    build:
-      context: flow
-      dockerfile: Dockerfile
-    volumes:
-      - ./flow:/flow
+      - flows_storage:/root/.prefect/flows
     depends_on:
       - server
+
+  flow:
+    <<: *template
+    build:
+      context: flow
+    volumes:
+      - ./flow:/flow
+      - flows_storage:/root/.prefect/flows
+    depends_on:
+      - server
+
+volumes:
+  flows_storage:

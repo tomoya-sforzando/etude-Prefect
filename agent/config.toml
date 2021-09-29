@@ -1,0 +1,10 @@
+# debug mode
+debug = true
+
+backend = "server"
+
+[server]
+host = "http://host.docker.internal"
+port = "4200"
+host_port = "4200"
+endpoint = "${server.host}:${server.port}"
