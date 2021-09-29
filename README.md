@@ -30,7 +30,8 @@
 
 - Python 3.8 or higher
   - Prefect
-- Docker
+- Docker Desktop
+  - docker
   - docker-compose
 
 ## How to
@@ -38,30 +39,32 @@
 ### Help
 
 ```shell
+ps                   監視
+up                   起動
+recreate             再建
+setup                初回
+restart              再起
+shell                接続
+logs                 記録
+follow               追跡
 open                 閲覧
 hide                 秘匿
 reveal               暴露
-start                開始
-lint                 監査
+build                構築
 test                 試験
+doc                  文書
 deploy               配備
+stop                 停止
+down                 削除
 clean                掃除
+prune                破滅
 help                 助言
 ```
 
 ### Setup
 
-#### Authorize ECR
-
 ```shell
-aws configure
-aws ecr get-login-password --region ap-northeast-1 | docker login --username AWS --password-stdin 910376070004.dkr.ecr.ap-northeast-1.amazonaws.com
-```
-
-#### Install Dependencies
-
-```shell
-pip install -r requreiments.txt
+(T. B. D.)
 ```
 
 ### Develop

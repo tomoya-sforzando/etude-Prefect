@@ -1,6 +1,7 @@
 version: '3'
 services:
   server:
+    platform: linux/amd64
     build:
       context: server
       dockerfile: Dockerfile
@@ -8,8 +9,11 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
 
   flow:
-    build: .
+    platform: linux/amd64
+    build:
+      context: flow
+      dockerfile: Dockerfile
     volumes:
-      - .:/app
+      - ./flow:/flow
     depends_on:
       - server
