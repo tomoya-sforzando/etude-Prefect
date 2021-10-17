@@ -12,7 +12,6 @@ x-template: &template
   volumes:
     - /var/run/docker.sock:/var/run/docker.sock
   init: true
-  restart: unless-stopped
 
 services:
   server:
