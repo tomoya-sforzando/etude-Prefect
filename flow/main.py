@@ -7,6 +7,7 @@ from prefect import Client, Flow, Task, Parameter
 from prefect.executors import LocalDaskExecutor
 from prefect.run_configs import UniversalRun
 from prefect.storage import Local
+from prefect.tasks.notifications.email_task import EmailTask
 
 PROJECT_NAME = os.getenv('PREFECT_PROJECT_NAME', 'etude-Prefect')
 
@@ -62,8 +63,15 @@ class SayHelloTask(Task):
 client = Client()
 client.create_project(project_name=PROJECT_NAME)
 
+# Setup tasks
+email_task = EmailTask(
+    subject='Prefect Notification - Flow finished',
+    msg='some message...',
+    email_to='tomoya@sforzando.co.jp',
+    email_from='tmyaksmda@gmail.com')
+
 # Setup flow
-basicFlow = AbstractFlow(client=client, flow_name="basicFlow", e_tasks=[SayHelloTask()], t_tasks=[], l_tasks=[])
+basicFlow = AbstractFlow(client=client, flow_name="basicFlow", e_tasks=[SayHelloTask()], t_tasks=[], l_tasks=[email_task])
 
 
 # Run flow

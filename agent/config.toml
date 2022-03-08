@@ -77,3 +77,11 @@ checkpointing = false
     [engine.task_runner]
     # the default task runner, specified using a full path
     default_class = "prefect.engine.task_runner.TaskRunner"
+
+
+[context.secrets]
+
+EMAIL_USERNAME = "tmyaksmda@gmail.com"
+# Set Google App Password.
+#   ref. [Notification Tasks | Prefect Docs](https://docs.prefect.io/api/latest/tasks/notifications.html#emailtask)
+EMAIL_PASSWORD = ""
