@@ -66,9 +66,10 @@ client.create_project(project_name=PROJECT_NAME)
 # Setup tasks
 email_task = EmailTask(
     subject='Prefect Notification - Flow finished',
-    msg='some message...',
-    email_to='tomoya@sforzando.co.jp',
-    email_from='tmyaksmda@gmail.com')
+    msg='This message is sent with AWS SES SMTP.',
+    smtp_server='email-smtp.ap-northeast-1.amazonaws.com',
+    email_from='<Email address needs domain that it was verified identities in Amazon SES>',
+    email_to='')
 
 # Setup flow
 basicFlow = AbstractFlow(client=client, flow_name="basicFlow", e_tasks=[SayHelloTask()], t_tasks=[], l_tasks=[email_task])

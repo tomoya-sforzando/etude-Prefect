@@ -80,8 +80,12 @@ checkpointing = false
 
 
 [context.secrets]
-
-EMAIL_USERNAME = "tmyaksmda@gmail.com"
-# Set Google App Password.
-#   ref. [Notification Tasks | Prefect Docs](https://docs.prefect.io/api/latest/tasks/notifications.html#emailtask)
+# If it use Gmail
+#   EMAIL_USERNAME = <Google account name> or <Gmail address>
+#   EMAIL_PASSWORD = <Google App Password>
+# else if it use AWS SES
+#   EMAIL_USERNAME = <AWS IAM: id>
+#   EMAIL_PASSWORD = <AWS IAM: ses_smtp_password_v4>
+# ref. [Notification Tasks | Prefect Docs](https://docs.prefect.io/api/latest/tasks/notifications.html#emailtask)
+EMAIL_USERNAME = ""
 EMAIL_PASSWORD = ""
