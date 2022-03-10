@@ -89,3 +89,6 @@ checkpointing = false
 # ref. [Notification Tasks | Prefect Docs](https://docs.prefect.io/api/latest/tasks/notifications.html#emailtask)
 EMAIL_USERNAME = ""
 EMAIL_PASSWORD = ""
+# If Prefect Secrets will be specified as environment variables of container of AWS ECS, than
+#   $ export PREFECT__CONTEXT__SECRETS__EMAIL_USERNAME=<AWS IAM: id>
+#   $ export PREFECT__CONTEXT__SECRETS__EMAIL_PASSWORD=<AWS IAM: ses_smtp_password_v4>
