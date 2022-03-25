@@ -12,15 +12,13 @@ from prefect.tasks.notifications.email_task import EmailTask
 PROJECT_NAME = os.getenv('PREFECT_PROJECT_NAME', 'etude-Prefect')
 
 class AbstractFlow:
-    def __init__(self, client: Client, flow_name: str = "no_named_flow", e_tasks: List[Task] = [], t_tasks: List[Task] = [], l_tasks: List[Task] = []) -> None:
+    def __init__(self, client: Client, flow_name: str = "no_named_flow", parameters: List[Task] = [], e_tasks: List[Task] = [], t_tasks: List[Task] = [], l_tasks: List[Task] = []) -> None:
         self.client = client
         self.flow_name = flow_name
         self.flow = Flow(name=flow_name, storage=Local(add_default_labels=False), executor=LocalDaskExecutor())
 
-        self.param = Parameter('msg', default='this is parameter')
-        self.datetime_param = prefect.core.parameter.DateTimeParameter('from_date', required=False)
-        self.flow.add_task(self.param)
-        self.flow.add_task(self.datetime_param)
+        for parameter in parameters:
+            self.flow.add_task(parameter)
 
         self.e_tasks = e_tasks
         self.t_tasks = t_tasks
@@ -59,9 +57,13 @@ class SayHelloTask(Task):
 
         self.logger.info(f'Hello World! {flow_params=} {type(from_date)=} {from_date=}')
 
-# Setup client
+# Setup prefect cloud client and create project
 client = Client()
 client.create_project(project_name=PROJECT_NAME)
+
+# Setup parameters
+message_parameter = Parameter('msg', default='this is parameter')
+datetime_parameter = prefect.core.parameter.DateTimeParameter('from_date', required=False)
 
 # Setup tasks
 email_task = EmailTask(
@@ -72,8 +74,12 @@ email_task = EmailTask(
     email_to='')
 
 # Setup flow
-basicFlow = AbstractFlow(client=client, flow_name="basicFlow", e_tasks=[SayHelloTask()], t_tasks=[], l_tasks=[email_task])
-
+basicFlow = AbstractFlow(
+    client=client, flow_name="basicFlow",
+    parameters=[message_parameter, datetime_parameter],
+    e_tasks=[SayHelloTask()],
+    t_tasks=[],
+    l_tasks=[])
 
 # Run flow
 basicFlow.run()
