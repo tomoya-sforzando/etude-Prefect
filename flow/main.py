@@ -12,8 +12,7 @@ from prefect.tasks.notifications.email_task import EmailTask
 PROJECT_NAME = os.getenv('PREFECT_PROJECT_NAME', 'etude-Prefect')
 
 class AbstractFlow:
-    def __init__(self, client: Client, flow_name: str = "no_named_flow", parameters: List[Task] = [], e_tasks: List[Task] = [], t_tasks: List[Task] = [], l_tasks: List[Task] = []) -> None:
-        self.client = client
+    def __init__(self, flow_name: str = "no_named_flow", parameters: List[Task] = [], e_tasks: List[Task] = [], t_tasks: List[Task] = [], l_tasks: List[Task] = []) -> None:
         self.flow_name = flow_name
         self.flow = Flow(name=flow_name, storage=Local(add_default_labels=False), executor=LocalDaskExecutor())
 
@@ -24,15 +23,17 @@ class AbstractFlow:
         self.t_tasks = t_tasks
         self.l_tasks = l_tasks
 
-    def run(self):
+    def register(self):
         self.extract()
         self.transform()
         self.load()
 
         self.flow.run_config = UniversalRun()
-        flow_id = self.flow.register(project_name=PROJECT_NAME)
+        return self.flow.register(project_name=PROJECT_NAME)
 
-        self.client.create_flow_run(flow_id=flow_id) #, parameters={'msg': "run from AbstractFlow", 'from_date': "2022-02-17T20:13:00+09:00"})
+    def run(self, flow_id: str, parameters: dict = {}):
+        Client().create_flow_run(flow_id=flow_id, parameters=parameters)
+
 
     def extract(self):
         for e_task in self.e_tasks:
@@ -58,8 +59,7 @@ class SayHelloTask(Task):
         self.logger.info(f'Hello World! {flow_params=} {type(from_date)=} {from_date=}')
 
 # Setup prefect cloud client and create project
-client = Client()
-client.create_project(project_name=PROJECT_NAME)
+Client().create_project(project_name=PROJECT_NAME)
 
 # Setup parameters
 message_parameter = Parameter('msg', default='this is parameter')
@@ -75,11 +75,14 @@ email_task = EmailTask(
 
 # Setup flow
 basicFlow = AbstractFlow(
-    client=client, flow_name="basicFlow",
+    flow_name="basicFlow",
     parameters=[message_parameter, datetime_parameter],
     e_tasks=[SayHelloTask()],
     t_tasks=[],
     l_tasks=[])
 
+# Register flow
+flow_id = basicFlow.register()
+
 # Run flow
-basicFlow.run()
+basicFlow.run(flow_id=flow_id, parameters={'msg': "Run registered flow.", 'from_date': "2022-02-17T20:13:00+09:00"})
