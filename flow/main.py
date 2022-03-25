@@ -13,8 +13,11 @@ PROJECT_NAME = os.getenv('PREFECT_PROJECT_NAME', 'etude-Prefect')
 
 class AbstractFlow:
     def __init__(self, flow_name: str = "no_named_flow", parameters: List[Task] = [], e_tasks: List[Task] = [], t_tasks: List[Task] = [], l_tasks: List[Task] = []) -> None:
-        self.flow_name = flow_name
-        self.flow = Flow(name=flow_name, storage=Local(add_default_labels=False), executor=LocalDaskExecutor())
+        self.flow = Flow(
+            name=flow_name,
+            run_config=UniversalRun(),
+            storage=Local(add_default_labels=False),
+            executor=LocalDaskExecutor())
 
         for parameter in parameters:
             self.flow.add_task(parameter)
@@ -28,7 +31,6 @@ class AbstractFlow:
         self.transform()
         self.load()
 
-        self.flow.run_config = UniversalRun()
         return self.flow.register(project_name=PROJECT_NAME)
 
     def run(self, flow_id: str, parameters: dict = {}):
