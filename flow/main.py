@@ -1,6 +1,6 @@
 import os
+from abc import abstractmethod
 from datetime import datetime
-from typing import List
 
 import prefect
 from prefect import Client, Flow, Task, Parameter
@@ -12,7 +12,7 @@ from prefect.tasks.notifications.email_task import EmailTask
 PROJECT_NAME = os.getenv('PREFECT_PROJECT_NAME', 'etude-Prefect')
 
 class AbstractFlow:
-    def __init__(self, flow_name: str = "no_named_flow", parameters: List[Task] = [], e_tasks: List[Task] = [], t_tasks: List[Task] = [], l_tasks: List[Task] = []) -> None:
+    def __init__(self, flow_name: str = "no_named_flow", parameters: tuple[Task] = [], e_tasks: tuple[Task] = [], t_tasks: tuple[Task] = [], l_tasks: tuple[Task] = []) -> None:
         self.flow = Flow(
             name=flow_name,
             run_config=UniversalRun(),
@@ -27,27 +27,38 @@ class AbstractFlow:
         self.l_tasks = l_tasks
 
     def register(self):
-        self.extract()
-        self.transform()
-        self.load()
+        master_csv_paths, products = self.extract()
+        master_data, resource_data = self.transform(master_csv_paths=master_csv_paths, products=products)
+        self.load(master_data=master_data, resource_data=resource_data)
 
         return self.flow.register(project_name=PROJECT_NAME)
 
     def run(self, flow_id: str, parameters: dict = {}):
         Client().create_flow_run(flow_id=flow_id, parameters=parameters)
 
+    @abstractmethod
+    def extract(self) -> tuple[tuple[Task], tuple[Task]]:
+        raise NotImplementedError
 
-    def extract(self):
-        for e_task in self.e_tasks:
-            self.flow.add_task(e_task)
+    @abstractmethod
+    def transform(self, master_csv_paths: tuple[Task], products: tuple[Task] = None) -> tuple[tuple[Task], tuple[Task]]:
+        raise NotImplementedError
 
-    def transform(self):
-        for t_task in self.t_tasks:
-            self.flow.add_task(t_task)
+    @abstractmethod
+    def load(self, master_data: tuple[Task], resource_data: tuple[Task] = None):
+        raise NotImplementedError
 
-    def load(self):
-        for l_task in self.l_tasks:
-            self.flow.add_task(l_task)
+class IdetailFlow(AbstractFlow):
+    def extract(self) -> tuple[tuple[Task], tuple[Task]]:
+        master_csv_paths = ""
+        products = self.e_tasks[0]
+        return products
+
+    def transform(self, master_csv_paths: tuple[Task], products: tuple[Task] = None) -> tuple[tuple[Task], tuple[Task]]:
+        pass
+
+    def load(self, master_data: tuple[Task], resource_data: tuple[Task] = None):
+        pass
 
 class SayHelloTask(Task):
     def __init__(self, **kwargs):
