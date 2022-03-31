@@ -30,9 +30,9 @@ class AbstractFlow:
         self.l_tasks = l_tasks
 
     def register(self):
-        master_csv_paths, products = self.extract()
-        master_data, resource_data = self.transform(master_csv_paths=master_csv_paths, products=products)
-        self.load(master_data=master_data, resource_data=resource_data, products=products)
+        self.extract()
+        self.transform()
+        self.load()
 
         return self.flow.register(project_name=PROJECT_NAME)
 
@@ -42,72 +42,75 @@ class AbstractFlow:
     def extract(self):
         raise NotImplementedError
 
-    def transform(self, master_csv_paths, products = None):
+    def transform(self):
         raise NotImplementedError
 
-    def load(self, master_data, resource_data = None, products = None):
+    def load(self):
         raise NotImplementedError
 
 class IdetailFlow(AbstractFlow):
     def extract(self):
-        for e_task in self.e_tasks:
-            self.flow.add_task(e_task)
+        master_csv_paths = self.flow.set_dependencies(
+            self.e_tasks[0],
+            upstream_tasks=None,
+            downstream_tasks=None,
+            keyword_tasks=None,
+            mapped=False,
+            validate=None)
         # master_csv_paths = [Path("csv/idetail_master.csv")]
-        # products = self.flow.set_dependencies(
-        #     self.e_tasks[0],
-        #     upstream_tasks=None,
-        #     downstream_tasks=None,
-        #     keyword_tasks=None,
-        #     mapped=False,
-        #     validate=None)
-        # return master_csv_paths, products
-        return None, None
 
-    def transform(self, master_csv_paths, products = None):
-        # # resource_data = self.t_tasks[0].map(product_name=products)
-        # resource_data = self.flow.set_dependencies(
-        #     self.t_tasks[0],
-        #     keyword_tasks={"product_name": products},
-        #     mapped=True)
-        # # master_data = self.t_tasks[1].map(resource_data=flatten(resource_data), master_csv_path=unmapped(master_csv_paths[0]))
-        # master_data = self.flow.set_dependencies(
-        #     self.t_tasks[1],
-        #     keyword_tasks={"resource_data": flatten(resource_data), "master_csv_path": unmapped(master_csv_paths[0])},
-        #     mapped=True)
-        # return master_data, resource_data
-        return None, None
+        products = self.flow.set_dependencies(
+            self.e_tasks[1],
+            upstream_tasks=None,
+            downstream_tasks=None,
+            keyword_tasks=None,
+            mapped=False,
+            validate=None)
 
-    def load(self, master_data, resource_data = None, products = None):
-        # # contents_deleted = self.l_tasks[0].map(resource_data=flatten(resource_data))
-        # contents_deleted = self.flow.set_dependencies(
-        #     self.l_tasks[0],
-        #     keyword_tasks={"resource_data": flatten(resource_data)},
-        #     mapped=True)
-        # # contents_registered = self.l_tasks[1].map(
-        # #     master_data=master_data,
-        # #     resource_data=flatten(resource_data),
-        # #     upstream_tasks=[contents_deleted])
-        # contents_registered = self.flow.set_dependencies(
-        #     self.l_tasks[1],
-        #     upstream_tasks=[contents_deleted],
-        #     keyword_tasks={"master_data": master_data, "resource_data": flatten(resource_data)},
-        #     mapped=True)
-        # # resources_updated = self.l_tasks[2].map(
-        # #     product_name=products,
-        # #     resource_data=resource_data)
-        # resources_updated = self.flow.set_dependencies(
-        #     self.l_tasks[2],
-        #     keyword_tasks={"product_name": products, "resource_data": resource_data},
-        #     mapped=True)
-        # # self.l_tasks[3].map(
-        # #     resource_data=resource_data,
-        # #     upstream_tasks=[contents_registered, resources_updated])
-        # self.flow.set_dependencies(
-        #     self.l_tasks[3],
-        #     upstream_tasks=[contents_registered, resources_updated],
-        #     keyword_tasks={"resource_data": resource_data},
-        #     mapped=True)
-        pass
+    def transform(self):
+        # resource_data = self.t_tasks[0].map(product_name=products)
+        self.flow.set_dependencies(
+            self.t_tasks[0],
+            upstream_tasks=[self.e_tasks[1]],
+            keyword_tasks={"product_name": self.e_tasks[1]},
+            mapped=True)
+        # master_data = self.t_tasks[1].map(resource_data=flatten(resource_data), master_csv_path=unmapped(master_csv_paths[0]))
+        master_data = self.flow.set_dependencies(
+            self.t_tasks[1],
+            upstream_tasks=[self.t_tasks[0], self.e_tasks[0]],
+            keyword_tasks={"resource_data": flatten(self.t_tasks[0]), "master_csv_path": unmapped(self.e_tasks[0])},
+            mapped=True)
+
+    def load(self):
+        # contents_deleted = self.l_tasks[0].map(resource_data=flatten(resource_data))
+        self.flow.set_dependencies(
+            self.l_tasks[0],
+            keyword_tasks={"resource_data": flatten(self.t_tasks[0])},
+            mapped=True)
+        # contents_registered = self.l_tasks[1].map(
+        #     master_data=master_data,
+        #     resource_data=flatten(resource_data),
+        #     upstream_tasks=[contents_deleted])
+        contents_registered = self.flow.set_dependencies(
+            self.l_tasks[1],
+            upstream_tasks=[self.l_tasks[0]],
+            keyword_tasks={"master_data": self.t_tasks[1], "resource_data": flatten(self.t_tasks[0])},
+            mapped=True)
+        # resources_updated = self.l_tasks[2].map(
+        #     product_name=products,
+        #     resource_data=resource_data)
+        self.flow.set_dependencies(
+            self.l_tasks[2],
+            keyword_tasks={"product_name": self.e_tasks[1], "resource_data": self.t_tasks[0]},
+            mapped=True)
+        # self.l_tasks[3].map(
+        #     resource_data=resource_data,
+        #     upstream_tasks=[contents_registered, resources_updated])
+        self.flow.set_dependencies(
+            self.l_tasks[3],
+            upstream_tasks=[self.l_tasks[1], self.l_tasks[2]],
+            keyword_tasks={"resource_data": self.t_tasks[0]},
+            mapped=True)
 
 # Task classes
 class SayHelloTask(Task):
@@ -120,6 +123,11 @@ class SayHelloTask(Task):
         flow_params = prefect.context.get("parameters", {})
 
         self.logger.info(f'Hello World! {flow_params=} {type(from_date)=} {from_date=}')
+
+class GetPathsOfMasterCsvTask(Task):
+    def run(self):
+        self.logger.info(f"{self.__class__.__name__}")
+        return ["csv/idetail_master.csv"]
 
 class GetProductsTask(Task):
     def run(self):
@@ -185,12 +193,9 @@ basic_flow = AbstractFlow(
 idetail_flow = IdetailFlow(
     flow_name="idetail_flow",
     parameters=[message_parameter, datetime_parameter],
-    e_tasks=[SayHelloTask()],
-    t_tasks=[],
-    l_tasks=[]
-    # e_tasks=[GetProductsTask()],
-    # t_tasks=[GetCsvResourceDataByProductTask(), GetCsvMasterDataTask()],
-    # l_tasks=[DeleteContentsTask(), RegisterContentsTask(), UpdateResourcesByProductTask(), UpdateStatusByS3RawDataPathTask()]
+    e_tasks=[GetPathsOfMasterCsvTask(), GetProductsTask()],
+    t_tasks=[GetCsvResourceDataByProductTask(), GetCsvMasterDataTask()],
+    l_tasks=[DeleteContentsTask(), RegisterContentsTask(), UpdateResourcesByProductTask(), UpdateStatusByS3RawDataPathTask()]
 )
 
 # Register flow
