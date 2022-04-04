@@ -5,11 +5,22 @@ from pathlib import Path
 from typing import List
 
 import prefect
-from prefect import Client, Flow, Task, Parameter, flatten, unmapped
+from prefect import Client, Flow, Parameter, flatten, unmapped
 from prefect.executors import LocalDaskExecutor
 from prefect.run_configs import UniversalRun
 from prefect.storage import Local
 from prefect.tasks.notifications.email_task import EmailTask
+
+from flow.tasks.say_hello_task import SayHelloTask
+
+from flow.tasks.idetail.delete_contents_task import DeleteContentsTask
+from flow.tasks.idetail.get_csv_master_data_task import GetCsvMasterDataTask
+from flow.tasks.idetail.get_csv_resource_data_by_product_task import GetCsvResourceDataByProductTask
+from flow.tasks.idetail.get_paths_of_master_csv_task import GetPathsOfMasterCsvTask
+from flow.tasks.idetail.get_products_task import GetProductsTask
+from flow.tasks.idetail.register_contents_task import RegisterContentsTask
+from flow.tasks.idetail.update_resources_by_product_task import UpdateResourcesByProductTask
+from flow.tasks.idetail.update_status_by_s3_raw_data_path_task import UpdateStatusByS3RawDataPathTask
 
 PROJECT_NAME = os.getenv('PREFECT_PROJECT_NAME', 'etude-Prefect')
 
@@ -111,60 +122,6 @@ class IdetailFlow(AbstractFlow):
             upstream_tasks=[self.l_tasks[1], self.l_tasks[2]],
             keyword_tasks={"resource_data": self.t_tasks[0]},
             mapped=True)
-
-# Task classes
-class SayHelloTask(Task):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.module_name = 'say_hello_task'
-
-
-    def run(self, from_date: datetime = None, **kwargs):
-        flow_params = prefect.context.get("parameters", {})
-
-        self.logger.info(f'Hello World! {flow_params=} {type(from_date)=} {from_date=}')
-
-class GetPathsOfMasterCsvTask(Task):
-    def run(self):
-        self.logger.info(f"{self.__class__.__name__}")
-        return ["csv/idetail_master.csv"]
-
-class GetProductsTask(Task):
-    def run(self):
-        self.logger.info(f"{self.__class__.__name__}")
-        return ['DUM', 'BEL']
-
-class GetCsvResourceDataByProductTask(Task):
-    def run(self, product_name: str):
-        self.logger.info(f"{self.__class__.__name__}: {product_name=}")
-        return [
-            {"key_message_id": "DUM0000001", "is_slide": True},
-            {"key_message_id": "BEL0000009", "is_slide": False}
-        ]
-
-class GetCsvMasterDataTask(Task):
-    def run(self, resource_data: dict, master_csv_path: Path = None):
-        self.logger.info(f"{self.__class__.__name__}: {resource_data=}, {master_csv_path=}")
-        return [
-            {"key_message_id": "DUM0000001", "product_name": "DUM"},
-            {"key_message_id": "BEL0000009", "product_name": "BEL"}
-        ]
-class DeleteContentsTask(Task):
-    def run(self, resource_data: dict):
-        self.logger.info(f"{self.__class__.__name__}: {resource_data=}")
-
-class RegisterContentsTask(Task):
-    def run(self, master_data: dict, resource_data: dict):
-        self.logger.info(f"{self.__class__.__name__}: {master_data=}, {resource_data=}")
-
-class UpdateResourcesByProductTask(Task):
-    def run(self, product_name: str, resource_data: List[dict]):
-        self.logger.info(f"{self.__class__.__name__}: {product_name=}, {resource_data=}")
-
-class UpdateStatusByS3RawDataPathTask(Task):
-    def run(self, resource_data: List[dict]):
-        self.logger.info(f"{self.__class__.__name__}: {resource_data=}")
-
 
 # Main process
 # Setup prefect cloud client and create project
