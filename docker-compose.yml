@@ -24,17 +24,6 @@ services:
       interval: 3s
       timeout: 3s
 
-  agent:
-    <<: *template
-    build:
-      context: agent
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - flows_storage:/root/.prefect/flows
-    depends_on:
-      server:
-        condition: service_healthy
-
   flow:
     <<: *template
     build:
@@ -46,6 +35,17 @@ services:
       server:
         condition: service_healthy
     restart: "no"
+
+  agent:
+    <<: *template
+    build:
+      context: agent
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - flows_storage:/root/.prefect/flows
+    depends_on:
+      - flow
+
 
 volumes:
   flows_storage:
