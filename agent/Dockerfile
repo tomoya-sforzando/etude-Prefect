@@ -17,9 +17,9 @@ RUN apt-get update && \
 
 RUN pip install --upgrade pip && pip install prefect
 
-COPY . .
-COPY --from=etude-prefect_flow flow/flows ./flows
-COPY --from=etude-prefect_flow flow/tasks ./tasks
+COPY ./agent .
+COPY ./flow/flows ./flows
+COPY ./flow/tasks ./tasks
 
 
 RUN prefect backend server
