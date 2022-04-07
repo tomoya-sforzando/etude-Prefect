@@ -8,9 +8,11 @@ from prefect.storage import Local
 PROJECT_NAME = os.getenv('PREFECT_PROJECT_NAME', 'etude-Prefect')
 
 class AbstractFlow:
-    def __init__(self, flow_name: str = "no_named_flow", parameters = [], e_tasks = [], t_tasks = [], l_tasks = []) -> None:
+    flow_name = None
+
+    def __init__(self, parameters = [], e_tasks = [], t_tasks = [], l_tasks = []) -> None:
         self.flow = Flow(
-            name=flow_name,
+            name=self.flow_name,
             run_config=UniversalRun(),
             storage=Local(add_default_labels=False),
             executor=LocalDaskExecutor())

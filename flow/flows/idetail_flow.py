@@ -4,6 +4,8 @@ from flows.abstract_flow import AbstractFlow
 
 
 class IdetailFlow(AbstractFlow):
+    flow_name = "idetail_flow"
+
     def extract(self):
         master_csv_paths = self.flow.set_dependencies(
             self.e_tasks[0],

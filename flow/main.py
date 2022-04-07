@@ -33,7 +33,6 @@ email_task = EmailTask(
 
 # Setup flow
 idetail_flow = IdetailFlow(
-    flow_name="idetail_flow",
     parameters=[message_parameter, datetime_parameter],
     e_tasks=[GetPathsOfMasterCsvTask(), GetProductsTask()],
     t_tasks=[GetCsvResourceDataByProductTask(), GetCsvMasterDataTask()],
