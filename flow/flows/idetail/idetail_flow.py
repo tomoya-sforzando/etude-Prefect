@@ -22,9 +22,6 @@ class IdetailFlow(AbstractFlowOnDemand):
             keyword_tasks={
                 "product_name": self.tasks.get_products_task
             },
-            upstream_tasks=[
-                self.tasks.get_products_task
-            ],
             flow=self.basic_flow,
         )
 
@@ -34,10 +31,6 @@ class IdetailFlow(AbstractFlowOnDemand):
                 "resource_data": flatten(self.tasks.get_csv_resource_data_by_product_task),
                 "master_csv_path": unmapped(self.tasks.get_paths_of_master_csv_task)
             },
-            upstream_tasks=[
-                self.tasks.get_csv_resource_data_by_product_task,
-                self.tasks.get_paths_of_master_csv_task
-            ],
             flow=self.basic_flow,
         )
 
@@ -46,9 +39,6 @@ class IdetailFlow(AbstractFlowOnDemand):
             keyword_tasks={
                 "resource_data": flatten(self.tasks.get_csv_resource_data_by_product_task)
             },
-            upstream_tasks=[
-                self.tasks.get_csv_resource_data_by_product_task
-            ],
             flow=self.basic_flow
         )
 
@@ -60,8 +50,6 @@ class IdetailFlow(AbstractFlowOnDemand):
             },
             upstream_tasks=[
                 self.tasks.delete_contents_task,
-                self.tasks.get_csv_master_data_task,
-                self.tasks.get_csv_resource_data_by_product_task
             ],
             flow=self.basic_flow,
         )
@@ -72,10 +60,6 @@ class IdetailFlow(AbstractFlowOnDemand):
                 "product_name": self.tasks.get_products_task,
                 "resource_data": self.tasks.get_csv_resource_data_by_product_task
             },
-            upstream_tasks=[
-                self.tasks.get_products_task,
-                self.tasks.get_csv_resource_data_by_product_task
-            ],
             flow=self.basic_flow,
         )
 
