@@ -7,14 +7,12 @@ from prefect.executors import LocalDaskExecutor
 from prefect.run_configs import UniversalRun
 from prefect.storage import Local
 
-# from flows.abstract_demands import AbstractDemands
-from flows.abstract_tasks import AbstractTasks
-# from flows.idetail_tasks import IdetailTasks
+from flows.abstract_settings import AbstractDemands, AbstractTasks
 
 PROJECT_NAME = os.getenv('PREFECT_PROJECT_NAME', 'etude-Prefect')
 
 class AbstractFlowOnDemand:
-    def __init__(self, flow_name, tasks) -> None:
+    def __init__(self, flow_name, tasks = AbstractTasks()) -> None:
         self.flow = Flow(
             name=flow_name,
             run_config=UniversalRun(),
@@ -24,7 +22,7 @@ class AbstractFlowOnDemand:
         self.basic_flow = self.flow.copy()
         self.tasks = tasks
 
-    def build(self, demands: list):
+    def build(self, demands: List[AbstractDemands]):
         self.build_basic_flow()
         self.build_flow_on_demand(demands)
 
@@ -34,9 +32,9 @@ class AbstractFlowOnDemand:
     def build_basic_flow(self):
         raise NotImplementedError
 
-    def build_flow_on_demand(self, demands: list):
+    def build_flow_on_demand(self, demands: List[AbstractDemands]):
         tasks_on_demand = [
-            self.tasks.get_by_solution(demand) for demand in demands]
+            self.tasks.get_by_demand(demand) for demand in demands]
 
         def get_dependent_tasks(task_on_demand: Task):
             dependent_tasks = set()

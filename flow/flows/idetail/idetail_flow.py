@@ -4,8 +4,9 @@ from typing import List
 from prefect import flatten
 
 from flows.abstract_flow_on_demand import AbstractFlowOnDemand
-from flows.idetail.idetail_demands import IdetailDemands
-from flows.idetail.idetail_tasks import IdetailTasks
+from flows.idetail.idetail_settings import IdetailDemands, IdetailTasks
+# from flows.idetail.idetail_demands import IdetailDemands
+# from flows.idetail.idetail_tasks import IdetailTasks
 
 PROJECT_NAME = os.getenv('PREFECT_PROJECT_NAME', 'etude-Prefect')
 

@@ -1,13 +1,15 @@
 from dataclasses import dataclass
 
-from prefect import Task
 
-from flows.abstract_demands import AbstractDemands
+@dataclass
+class AbstractDemands:
+    pass
+
 
 @dataclass
 class AbstractTasks:
 
-    def get_by_solution(self, demand: AbstractDemands):
+    def get_by_demand(self, demand: AbstractDemands):
         if demand in (self.__dict__).keys():
             return self.__dict__.get(demand)
         else:

@@ -5,7 +5,7 @@ from prefect import Client, Parameter
 from prefect.tasks.notifications.email_task import EmailTask
 
 from flows.idetail.idetail_flow import IdetailFlow
-from flows.idetail.idetail_demands import IdetailDemands
+from flows.idetail.idetail_settings import IdetailDemands
 
 PROJECT_NAME = os.getenv('PREFECT_PROJECT_NAME', 'etude-Prefect')
 
@@ -28,7 +28,7 @@ email_task = EmailTask(
 idetail_flow = IdetailFlow()
 
 # Build flow
-idetail_flow.build([IdetailDemands.delete_contents_task, IdetailDemands.get_csv_master_data_task])
+idetail_flow.build([IdetailDemands.get_csv_master_data_task, IdetailDemands.get_csv_resource_data_by_product_task])
 
 # Register flow
 idetail_flow_id = idetail_flow.register()
