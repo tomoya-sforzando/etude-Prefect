@@ -5,7 +5,7 @@ from prefect import Client, Parameter
 from prefect.tasks.notifications.email_task import EmailTask
 
 from flows.idetail_flow import IdetailFlow
-from flows.idetail_flow_with_solution import IdetailFlowWithSolution
+from flows.idetail_flow_with_solution import IdetailFlowWithSolution, IdetailSolutions
 from tasks.idetail.delete_contents_task import DeleteContentsTask
 from tasks.idetail.get_csv_master_data_task import GetCsvMasterDataTask
 from tasks.idetail.get_csv_resource_data_by_product_task import GetCsvResourceDataByProductTask
@@ -40,6 +40,8 @@ idetail_flow = IdetailFlow(
     l_tasks=[DeleteContentsTask(), RegisterContentsTask(), UpdateResourcesByProductTask(), UpdateStatusByS3RawDataPathTask()]
 )
 idetail_flow_with_solution = IdetailFlowWithSolution()
+
+idetail_flow_with_solution.build(IdetailSolutions.update_status_by_s3_raw_data_path_task)
 
 # Register flow
 idetail_flow_id = idetail_flow.register()
