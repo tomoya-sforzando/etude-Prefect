@@ -18,7 +18,7 @@ from tasks.idetail.update_status_by_s3_raw_data_path_task import UpdateStatusByS
 PROJECT_NAME = os.getenv('PREFECT_PROJECT_NAME', 'etude-Prefect')
 
 @dataclass
-class IdetailSolutions:
+class IdetailDemands:
     get_products_task: str = "get_products_task"
     get_csv_resource_data_by_product_task: str = "get_csv_resource_data_by_product_task"
     get_paths_of_master_csv_task: str = "get_paths_of_master_csv_task"
@@ -39,29 +39,25 @@ class IdetailTasks:
     update_resources_by_product_task: Task = UpdateResourcesByProductTask()
     update_status_by_s3_raw_data_path_task: Task = UpdateStatusByS3RawDataPathTask()
 
-    def get_by_solution(self, solution: IdetailSolutions):
-        if solution in (IdetailTasks.__dict__).keys():
-            return IdetailTasks.__dict__.get(solution)
+    def get_by_solution(self, demand: IdetailDemands):
+        if demand in (IdetailTasks.__dict__).keys():
+            return IdetailTasks.__dict__.get(demand)
         else:
             return None
 
-class IdetailFlowWithSolution:
+class IdetailFlowOnDemand:
     def __init__(self) -> None:
         self.base_flow = Flow(
-            name="base_flow",
+            name="idetail_flow_on_demand",
             run_config=UniversalRun(),
             storage=Local(add_default_labels=False),
             executor=LocalDaskExecutor())
 
-        self.flow_with_solution = Flow(
-            name="idetail_flow_with_solution",
-            run_config=UniversalRun(),
-            storage=Local(add_default_labels=False),
-            executor=LocalDaskExecutor())
+        self.flow_on_demand = self.base_flow.copy()
 
         self.idetail_tasks = IdetailTasks()
 
-    def build(self, idetail_solution: IdetailSolutions = None):
+    def build(self, idetail_solution: IdetailDemands = None):
         ## set tasks with set_upstream
         self.idetail_tasks.get_csv_resource_data_by_product_task.set_upstream(
             flow=self.base_flow,
@@ -122,7 +118,7 @@ class IdetailFlowWithSolution:
             for task in get_target_tasks(self.idetail_tasks.get_by_solution(idetail_solution)):
                 base_edges = self.base_flow.edges_to(task)
                 for edge in base_edges:
-                    self.flow_with_solution.add_edge(
+                    self.flow_on_demand.add_edge(
                         upstream_task=edge.upstream_task,
                         downstream_task=edge.downstream_task,
                         key=edge.key,
@@ -130,10 +126,10 @@ class IdetailFlowWithSolution:
                         flattened=edge.flattened
                     )
         else:
-            self.flow_with_solution = self.base_flow
+            self.flow_on_demand = self.base_flow
 
     def register(self):
-        return self.flow_with_solution.register(project_name=PROJECT_NAME)
+        return self.flow_on_demand.register(project_name=PROJECT_NAME)
 
     def run(self, flow_id: str, parameters: dict = {}):
         Client().create_flow_run(flow_id=flow_id, parameters=parameters)
