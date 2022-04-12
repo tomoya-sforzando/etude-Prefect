@@ -1,5 +1,5 @@
-from dataclasses import dataclass
 import os
+from abc import ABC, abstractmethod
 from typing import List
 
 from prefect import Client, Flow, Task
@@ -11,7 +11,7 @@ from flows.abstract_settings import AbstractDemands, AbstractTasks
 
 PROJECT_NAME = os.getenv('PREFECT_PROJECT_NAME', 'etude-Prefect')
 
-class AbstractFlowOnDemand:
+class AbstractFlowOnDemand(ABC):
     def __init__(self, flow_name, tasks = AbstractTasks()) -> None:
         self.flow = Flow(
             name=flow_name,
@@ -29,6 +29,7 @@ class AbstractFlowOnDemand:
         if not demands:
             self.flow = self.basic_flow
 
+    @abstractmethod
     def build_basic_flow(self):
         raise NotImplementedError
 
@@ -68,5 +69,6 @@ class AbstractFlowOnDemand:
     def register(self):
         return self.flow.register(project_name=PROJECT_NAME)
 
-    def run(self, flow_id: str, parameters: dict = {}):
+    @staticmethod
+    def run(flow_id: str, parameters: dict = {}):
         Client().create_flow_run(flow_id=flow_id, parameters=parameters)

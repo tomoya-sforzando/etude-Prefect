@@ -1,13 +1,14 @@
+from abc import ABC
 from dataclasses import dataclass
 
 
 @dataclass
-class AbstractDemands:
+class AbstractDemands(ABC):
     pass
 
 
 @dataclass
-class AbstractTasks:
+class AbstractTasks(ABC):
 
     def get_by_demand(self, demand: AbstractDemands):
         if demand in (self.__dict__).keys():
