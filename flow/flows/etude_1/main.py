@@ -2,7 +2,7 @@ import os
 
 from prefect import Client
 
-from flows.hello_flow import hello_flow
+from flows.etude_1.hello_flow import hello_flow
 
 
 PROJECT_NAME = os.getenv('PREFECT_PROJECT_NAME', 'etude-Prefect')

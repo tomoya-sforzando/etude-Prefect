@@ -1,6 +1,6 @@
 from prefect import flatten, unmapped
 
-from flows.abstract_flow import AbstractFlow
+from flows.etude_1.abstract_flow import AbstractFlow
 
 
 class IdetailFlow(AbstractFlow):

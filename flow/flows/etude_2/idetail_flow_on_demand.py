@@ -43,8 +43,8 @@ class IdetailTasks:
     update_status_by_s3_raw_data_path_task: Task = UpdateStatusByS3RawDataPathTask()
 
     def get_by_solution(self, demand: IdetailDemands):
-        if demand in (IdetailTasks.__dict__).keys():
-            return IdetailTasks.__dict__.get(demand)
+        if demand in (self.__dict__).keys():
+            return self.__dict__.get(demand)
         else:
             return None
 
