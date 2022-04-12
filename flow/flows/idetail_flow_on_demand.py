@@ -1,5 +1,6 @@
 import os
 from dataclasses import dataclass
+from typing import List
 
 from prefect import Client, Flow, Task, flatten
 from prefect.executors import LocalDaskExecutor
@@ -17,6 +18,7 @@ from tasks.idetail.update_status_by_s3_raw_data_path_task import UpdateStatusByS
 
 PROJECT_NAME = os.getenv('PREFECT_PROJECT_NAME', 'etude-Prefect')
 
+
 @dataclass
 class IdetailDemands:
     get_products_task: str = "get_products_task"
@@ -27,6 +29,7 @@ class IdetailDemands:
     register_contents_task: str = "register_contents_task"
     update_resources_by_product_task: str = "update_resources_by_product_task"
     update_status_by_s3_raw_data_path_task: str = "update_status_by_s3_raw_data_path_task"
+
 
 @dataclass
 class IdetailTasks:
@@ -45,91 +48,104 @@ class IdetailTasks:
         else:
             return None
 
+
 class IdetailFlowOnDemand:
     def __init__(self) -> None:
-        self.base_flow = Flow(
+        self.flow = Flow(
             name="idetail_flow_on_demand",
             run_config=UniversalRun(),
             storage=Local(add_default_labels=False),
             executor=LocalDaskExecutor())
 
-        self.flow_on_demand = self.base_flow.copy()
-
+        self.basic_flow = self.flow.copy()
         self.idetail_tasks = IdetailTasks()
 
-    def build(self, idetail_solution: IdetailDemands = None):
-        ## set tasks with set_upstream
+    def build(self, idetail_demands: List[IdetailDemands] = [IdetailDemands.update_status_by_s3_raw_data_path_task]):
+        self.build_basic_flow()
+        self.build_flow_on_demand(idetail_demands)
+
+        if not idetail_demands:
+            self.flow = self.basic_flow
+
+    def build_basic_flow(self):
+        ## Add tasks with set_upstream
         self.idetail_tasks.get_csv_resource_data_by_product_task.set_upstream(
-            flow=self.base_flow,
+            flow=self.basic_flow,
             task=self.idetail_tasks.get_products_task, key="product_name", mapped=True)
 
         self.idetail_tasks.get_csv_master_data_task.set_upstream(
-            flow=self.base_flow,
+            flow=self.basic_flow,
             task=flatten(self.idetail_tasks.get_csv_resource_data_by_product_task), key="resource_data", mapped=True)
         self.idetail_tasks.get_csv_master_data_task.set_upstream(
-            flow=self.base_flow,
+            flow=self.basic_flow,
             task=self.idetail_tasks.get_paths_of_master_csv_task, key="master_csv_path", mapped=False)
 
         self.idetail_tasks.delete_contents_task.set_upstream(
-            flow=self.base_flow,
+            flow=self.basic_flow,
             task=flatten(self.idetail_tasks.get_csv_resource_data_by_product_task), key="resource_data", mapped=True)
 
         self.idetail_tasks.register_contents_task.set_upstream(
-            flow=self.base_flow,
+            flow=self.basic_flow,
             task=self.idetail_tasks.delete_contents_task)
         self.idetail_tasks.register_contents_task.set_upstream(
-            flow=self.base_flow,
+            flow=self.basic_flow,
             task=self.idetail_tasks.get_csv_master_data_task, key="master_data", mapped=True)
         self.idetail_tasks.register_contents_task.set_upstream(
-            flow=self.base_flow,
+            flow=self.basic_flow,
             task=flatten(self.idetail_tasks.get_csv_resource_data_by_product_task), key="resource_data", mapped=True)
 
         self.idetail_tasks.update_resources_by_product_task.set_upstream(
-            flow=self.base_flow,
+            flow=self.basic_flow,
             task=self.idetail_tasks.get_products_task, key="product_name", mapped=True)
         self.idetail_tasks.update_resources_by_product_task.set_upstream(
-            flow=self.base_flow,
+            flow=self.basic_flow,
             task=self.idetail_tasks.get_csv_resource_data_by_product_task, key="resource_data", mapped=True)
 
         self.idetail_tasks.update_status_by_s3_raw_data_path_task.set_upstream(
-            flow=self.base_flow,
+            flow=self.basic_flow,
             task=self.idetail_tasks.register_contents_task)
         self.idetail_tasks.update_status_by_s3_raw_data_path_task.set_upstream(
-            flow=self.base_flow,
+            flow=self.basic_flow,
             task=self.idetail_tasks.update_resources_by_product_task)
         self.idetail_tasks.update_status_by_s3_raw_data_path_task.set_upstream(
-            flow=self.base_flow,
+            flow=self.basic_flow,
             task=self.idetail_tasks.get_csv_resource_data_by_product_task, key="resource_data", mapped=True)
 
-        ## build solution flow
-        if idetail_solution:
-            def get_target_tasks(solution_task: Task):
-                target_tasks = set()
-                for_search_tasks = self.base_flow.upstream_tasks(solution_task)
-                while len(for_search_tasks):
-                    for task in for_search_tasks:
-                        target_tasks.add(task)
-                        for_search_tasks = for_search_tasks | self.base_flow.upstream_tasks(task)
-                        for_search_tasks.remove(task)
-                    for_search_tasks = for_search_tasks - target_tasks
-                target_tasks.add(solution_task)
-                return target_tasks
+    def build_flow_on_demand(self, idetail_demands: List[IdetailDemands]):
+        idetail_tasks_on_demand = [
+            self.idetail_tasks.get_by_solution(idetail_demand) for idetail_demand in idetail_demands]
 
-            for task in get_target_tasks(self.idetail_tasks.get_by_solution(idetail_solution)):
-                base_edges = self.base_flow.edges_to(task)
-                for edge in base_edges:
-                    self.flow_on_demand.add_edge(
-                        upstream_task=edge.upstream_task,
-                        downstream_task=edge.downstream_task,
-                        key=edge.key,
-                        mapped=edge.mapped,
-                        flattened=edge.flattened
-                    )
-        else:
-            self.flow_on_demand = self.base_flow
+        def get_dependent_tasks(task_on_demand: Task):
+            dependent_tasks = set()
+            upstream_tasks = self.basic_flow.upstream_tasks(task_on_demand)
+            while len(upstream_tasks):
+                for task in upstream_tasks:
+                    dependent_tasks.add(task)
+                    upstream_tasks = upstream_tasks | self.basic_flow.upstream_tasks(task)
+                    upstream_tasks.remove(task)
+                upstream_tasks = upstream_tasks - dependent_tasks
+            dependent_tasks.add(task_on_demand)
+            return dependent_tasks
+
+        def get_all_dependent_tasks(tasks_on_demand: List[Task]):
+            all_dependent_tasks = set()
+            for task in tasks_on_demand:
+                all_dependent_tasks = all_dependent_tasks | get_dependent_tasks(task)
+            return all_dependent_tasks
+
+        for dependent_task in get_all_dependent_tasks(idetail_tasks_on_demand):
+            base_edges = self.basic_flow.edges_to(dependent_task)
+            for edge in base_edges:
+                self.flow.add_edge(
+                    upstream_task=edge.upstream_task,
+                    downstream_task=edge.downstream_task,
+                    key=edge.key,
+                    mapped=edge.mapped,
+                    flattened=edge.flattened
+                )
 
     def register(self):
-        return self.flow_on_demand.register(project_name=PROJECT_NAME)
+        return self.flow.register(project_name=PROJECT_NAME)
 
     def run(self, flow_id: str, parameters: dict = {}):
         Client().create_flow_run(flow_id=flow_id, parameters=parameters)
