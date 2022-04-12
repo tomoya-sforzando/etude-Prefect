@@ -12,7 +12,7 @@ from flows.abstract_settings import AbstractDemands, AbstractTasks
 PROJECT_NAME = os.getenv('PREFECT_PROJECT_NAME', 'etude-Prefect')
 
 class AbstractFlowOnDemand(ABC):
-    def __init__(self, flow_name, tasks = AbstractTasks()) -> None:
+    def __init__(self, flow_name):
         self.flow = Flow(
             name=flow_name,
             run_config=UniversalRun(),
@@ -20,7 +20,7 @@ class AbstractFlowOnDemand(ABC):
             executor=LocalDaskExecutor())
 
         self.basic_flow = self.flow.copy()
-        self.tasks = tasks
+        self.tasks = AbstractTasks()
 
     def build(self, demands: List[AbstractDemands]):
         self.build_basic_flow()
@@ -31,6 +31,9 @@ class AbstractFlowOnDemand(ABC):
 
     @abstractmethod
     def build_basic_flow(self):
+        # Build task dependencies with Task class or Flow class
+        # ref. https://docs.prefect.io/api/latest/core/task.html
+        # ref. https://docs.prefect.io/api/latest/core/flow.html
         raise NotImplementedError
 
     def build_flow_on_demand(self, demands: List[AbstractDemands]):

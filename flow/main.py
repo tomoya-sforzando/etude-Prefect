@@ -28,7 +28,7 @@ email_task = EmailTask(
 idetail_flow = IdetailFlow()
 
 # Build flow
-idetail_flow.build([IdetailDemands.get_csv_master_data_task, IdetailDemands.get_csv_resource_data_by_product_task])
+idetail_flow.build(demands=[IdetailDemands.get_csv_master_data_task, IdetailDemands.get_csv_resource_data_by_product_task])
 
 # Register flow
 idetail_flow_id = idetail_flow.register()
