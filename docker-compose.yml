@@ -27,7 +27,8 @@ services:
   agent:
     <<: *template
     build:
-      context: agent
+      context: .
+      dockerfile: ./agent/Dockerfile
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - flows_storage:/root/.prefect/flows

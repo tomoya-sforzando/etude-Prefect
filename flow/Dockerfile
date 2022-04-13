@@ -14,4 +14,4 @@ COPY . .
 
 RUN prefect backend server
 
-CMD ["python", "flow.py"]
+CMD ["python", "main.py"]
