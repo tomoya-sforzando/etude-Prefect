@@ -4,8 +4,8 @@ import prefect
 from prefect import Client, Parameter
 from prefect.tasks.notifications.email_task import EmailTask
 
-from flows.idetail.idetail_flow import IdetailFlow
-from flows.idetail.idetail_settings import IdetailTask
+from flows.idetail.flow import Flow as IdetailFlow
+from tasks.idetail.meta_task import MetaTask as IdetailTask
 
 PROJECT_NAME = os.getenv('PREFECT_PROJECT_NAME', 'etude-Prefect')
 

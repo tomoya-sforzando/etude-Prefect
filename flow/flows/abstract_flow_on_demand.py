@@ -4,7 +4,7 @@ from typing import List
 
 from prefect import Client, Flow, Task
 
-from flows.abstract_settings import AbstractMetaTask
+from tasks.abstract_meta_task import AbstractMetaTask
 
 PROJECT_NAME = os.getenv('PREFECT_PROJECT_NAME', 'etude-Prefect')
 

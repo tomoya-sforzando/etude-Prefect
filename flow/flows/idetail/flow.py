@@ -3,12 +3,12 @@ from typing import List
 
 from prefect import flatten, unmapped
 
+from tasks.idetail.meta_task import MetaTask as IdetailTask
 from flows.abstract_flow_on_demand import AbstractFlowOnDemand
-from flows.idetail.idetail_settings import IdetailTask
 
 PROJECT_NAME = os.getenv('PREFECT_PROJECT_NAME', 'etude-Prefect')
 
-class IdetailFlow(AbstractFlowOnDemand):
+class Flow(AbstractFlowOnDemand):
     def __init__(self):
         self.meta_task = IdetailTask()
         super().__init__(name="idetail_flow", meta_task=self.meta_task)
