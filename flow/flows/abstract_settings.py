@@ -1,20 +1,12 @@
 from abc import ABC
 from dataclasses import dataclass
 
-
-@dataclass
-class AbstractDemands(ABC):
-    pass
+from prefect import Task
 
 
 @dataclass
-class AbstractTasks(ABC):
+class AbstractMetaTask(ABC):
 
-    def get_all(self):
-        return self.__dict__.values()
-
-    def get_by_demand(self, demand: AbstractDemands):
-        if demand in self.__dict__.keys():
-            return self.__dict__.get(demand)
-        else:
-            return None
+    def get_by_demand(self, task_on_demand: Task):
+        if task_on_demand.name in self.__dict__.keys():
+            return self.__dict__.get(task_on_demand.name)

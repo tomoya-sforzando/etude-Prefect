@@ -4,21 +4,21 @@ from typing import List
 
 from prefect import Client, Flow, Task
 
-from flows.abstract_settings import AbstractDemands, AbstractTasks
+from flows.abstract_settings import AbstractMetaTask
 
 PROJECT_NAME = os.getenv('PREFECT_PROJECT_NAME', 'etude-Prefect')
 
 class AbstractFlowOnDemand(Flow, metaclass=ABCMeta):
-    def __init__(self, meta_tasks = AbstractTasks(), *args, **kwargs):
-        self.meta_tasks = meta_tasks
-        self.basic_flow = Flow(name="abstract_flow")
-        super().__init__(tasks=self.meta_tasks.get_all(), *args, **kwargs)
+    def __init__(self, name, meta_task=AbstractMetaTask(), *args, **kwargs):
+        self.meta_task = meta_task
+        self.basic_flow = Flow(name=name)
+        super().__init__(name=name, *args, **kwargs)
 
-    def build(self, demands: List[AbstractDemands]):
+    def build(self, tasks_on_demand: List[AbstractMetaTask]):
         self.build_basic_flow()
-        self.build_flow_on_demand(demands)
+        self.build_flow_on_demand(tasks_on_demand)
 
-        if not demands:
+        if not tasks_on_demand:
             self = self.basic_flow
 
     @abstractmethod
@@ -28,10 +28,10 @@ class AbstractFlowOnDemand(Flow, metaclass=ABCMeta):
         # ref. https://docs.prefect.io/api/latest/core/flow.html
         raise NotImplementedError
 
-    def build_flow_on_demand(self, demands: List[AbstractDemands]):
+    def build_flow_on_demand(self, tasks_on_demand: List[AbstractMetaTask]):
         self.tasks = set() # Reset tasks
         tasks_on_demand = [
-            self.meta_tasks.get_by_demand(demand) for demand in demands]
+            self.meta_task.get_by_demand(task) for task in tasks_on_demand]
 
         def get_dependent_tasks(task_on_demand: Task):
             dependent_tasks = set()
