@@ -13,64 +13,64 @@ class Flow(AbstractFlowOnDemand):
         self.meta_task = IdetailTask()
         super().__init__(name="idetail_flow", meta_task=self.meta_task)
 
-    def build(self, tasks_on_demand: List[IdetailTask] = [IdetailTask.UpdateStatusByS3RawDataPathTask]):
+    def build(self, tasks_on_demand: List[IdetailTask] = [IdetailTask.update_status_by_s3_raw_data_path]):
         super().build(tasks_on_demand)
 
     def build_basic_flow(self):
-        self.meta_task.GetCsvResourceDataByProductTask.set_dependencies(
+        self.meta_task.get_csv_resource_data_by_product.set_dependencies(
             mapped=True,
             keyword_tasks={
-                "product_name": self.meta_task.GetProductsTask
+                "product_name": self.meta_task.get_products
             },
             flow=self.basic_flow,
         )
 
-        self.meta_task.GetCsvMasterDataTask.set_dependencies(
+        self.meta_task.get_csv_master_data.set_dependencies(
             mapped=True,
             keyword_tasks={
-                "resource_data": flatten(self.meta_task.GetCsvResourceDataByProductTask),
-                "master_csv_path": unmapped(self.meta_task.GetPathsOfMasterCsvTask)
+                "resource_data": flatten(self.meta_task.get_csv_resource_data_by_product),
+                "master_csv_path": unmapped(self.meta_task.get_paths_of_master_csv)
             },
             flow=self.basic_flow,
         )
 
-        self.meta_task.DeleteContentsTask.set_dependencies(
+        self.meta_task.delete_contents.set_dependencies(
             mapped=True,
             keyword_tasks={
-                "resource_data": flatten(self.meta_task.GetCsvResourceDataByProductTask)
+                "resource_data": flatten(self.meta_task.get_csv_resource_data_by_product)
             },
             flow=self.basic_flow
         )
 
-        self.meta_task.RegisterContentsTask.set_dependencies(
+        self.meta_task.register_contents.set_dependencies(
             mapped=True,
             keyword_tasks={
-                "master_data": self.meta_task.GetCsvMasterDataTask,
-                "resource_data": flatten(self.meta_task.GetCsvResourceDataByProductTask)
+                "master_data": self.meta_task.get_csv_master_data,
+                "resource_data": flatten(self.meta_task.get_csv_resource_data_by_product)
             },
             upstream_tasks=[
-                self.meta_task.DeleteContentsTask,
+                self.meta_task.delete_contents,
             ],
             flow=self.basic_flow,
         )
 
-        self.meta_task.UpdateResourcesByProductTask.set_dependencies(
+        self.meta_task.update_resources_by_product.set_dependencies(
             mapped=True,
             keyword_tasks={
-                "product_name": self.meta_task.GetProductsTask,
-                "resource_data": self.meta_task.GetCsvResourceDataByProductTask
+                "product_name": self.meta_task.get_products,
+                "resource_data": self.meta_task.get_csv_resource_data_by_product
             },
             flow=self.basic_flow,
         )
 
-        self.meta_task.UpdateStatusByS3RawDataPathTask.set_dependencies(
+        self.meta_task.update_status_by_s3_raw_data_path.set_dependencies(
             mapped=True,
             keyword_tasks={
-                "resource_data": self.meta_task.GetCsvResourceDataByProductTask
+                "resource_data": self.meta_task.get_csv_resource_data_by_product
             },
             upstream_tasks=[
-                self.meta_task.RegisterContentsTask,
-                self.meta_task.UpdateResourcesByProductTask
+                self.meta_task.register_contents,
+                self.meta_task.update_resources_by_product
             ],
             flow=self.basic_flow,
         )

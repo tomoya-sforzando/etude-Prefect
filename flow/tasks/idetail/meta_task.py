@@ -15,11 +15,27 @@ from .update_status_by_s3_raw_data_path_task import UpdateStatusByS3RawDataPathT
 
 @dataclass
 class MetaTask(AbstractMetaTask):
-    GetProductsTask: Task = GetProductsTask()
-    GetCsvResourceDataByProductTask: Task = GetCsvResourceDataByProductTask()
-    GetPathsOfMasterCsvTask: Task = GetPathsOfMasterCsvTask()
-    GetCsvMasterDataTask: Task = GetCsvMasterDataTask()
-    DeleteContentsTask: Task = DeleteContentsTask()
-    RegisterContentsTask: Task = RegisterContentsTask()
-    UpdateResourcesByProductTask: Task = UpdateResourcesByProductTask()
-    UpdateStatusByS3RawDataPathTask: Task = UpdateStatusByS3RawDataPathTask()
+    get_products: Task = GetProductsTask(
+        name="get_products"
+    )
+    get_csv_resource_data_by_product: Task = GetCsvResourceDataByProductTask(
+        name="get_csv_resource_data_by_product"
+    )
+    get_paths_of_master_csv: Task = GetPathsOfMasterCsvTask(
+        name="get_paths_of_master_csv"
+    )
+    get_csv_master_data: Task = GetCsvMasterDataTask(
+        name="get_csv_master_data"
+    )
+    delete_contents: Task = DeleteContentsTask(
+        name="delete_contents"
+    )
+    register_contents: Task = RegisterContentsTask(
+        name="register_contents"
+    )
+    update_resources_by_product: Task = UpdateResourcesByProductTask(
+        name="update_resources_by_product"
+    )
+    update_status_by_s3_raw_data_path: Task = UpdateStatusByS3RawDataPathTask(
+        name="update_status_by_s3_raw_data_path"
+    )
