@@ -1,33 +1,25 @@
 import os
-from abc import ABC, abstractmethod
+from abc import ABC, ABCMeta, abstractmethod
 from typing import List
 
 from prefect import Client, Flow, Task
-from prefect.executors import LocalDaskExecutor
-from prefect.run_configs import UniversalRun
-from prefect.storage import Local
 
-from flows.abstract_settings import AbstractDemands, AbstractTasks
+from tasks.abstract_meta_task import AbstractMetaTask
 
 PROJECT_NAME = os.getenv('PREFECT_PROJECT_NAME', 'etude-Prefect')
 
-class AbstractFlowOnDemand(ABC):
-    def __init__(self, flow_name):
-        self.flow = Flow(
-            name=flow_name,
-            run_config=UniversalRun(),
-            storage=Local(add_default_labels=False),
-            executor=LocalDaskExecutor())
+class AbstractFlowOnDemand(Flow, metaclass=ABCMeta):
+    def __init__(self, name, meta_task=AbstractMetaTask(), *args, **kwargs):
+        self.meta_task = meta_task
+        self.basic_flow = Flow(name=name)
+        super().__init__(name=name, *args, **kwargs)
 
-        self.basic_flow = self.flow.copy()
-        self.tasks = AbstractTasks()
-
-    def build(self, demands: List[AbstractDemands]):
+    def build(self, tasks_on_demand: List[AbstractMetaTask]):
         self.build_basic_flow()
-        self.build_flow_on_demand(demands)
+        self.build_flow_on_demand(tasks_on_demand)
 
-        if not demands:
-            self.flow = self.basic_flow
+        if not tasks_on_demand:
+            self = self.basic_flow
 
     @abstractmethod
     def build_basic_flow(self):
@@ -36,9 +28,10 @@ class AbstractFlowOnDemand(ABC):
         # ref. https://docs.prefect.io/api/latest/core/flow.html
         raise NotImplementedError
 
-    def build_flow_on_demand(self, demands: List[AbstractDemands]):
+    def build_flow_on_demand(self, tasks_on_demand: List[AbstractMetaTask]):
+        self.tasks = set() # Reset tasks
         tasks_on_demand = [
-            self.tasks.get_by_demand(demand) for demand in demands]
+            self.meta_task.get_by_demand(task) for task in tasks_on_demand]
 
         def get_dependent_tasks(task_on_demand: Task):
             dependent_tasks = set()
@@ -61,7 +54,7 @@ class AbstractFlowOnDemand(ABC):
         for dependent_task in get_all_dependent_tasks(tasks_on_demand):
             base_edges = self.basic_flow.edges_to(dependent_task)
             for edge in base_edges:
-                self.flow.add_edge(
+                self.add_edge(
                     upstream_task=edge.upstream_task,
                     downstream_task=edge.downstream_task,
                     key=edge.key,
@@ -70,7 +63,7 @@ class AbstractFlowOnDemand(ABC):
                 )
 
     def register(self):
-        return self.flow.register(project_name=PROJECT_NAME)
+        return super().register(project_name=PROJECT_NAME)
 
     @staticmethod
     def run(flow_id: str, parameters: dict = {}):
